@@ -2,7 +2,6 @@ package srvmgr
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"os"
 	"os/signal"
@@ -14,12 +13,12 @@ import (
 type Manager struct {
 	MaxWaitingStop  time.Duration
 	underlyingTasks []*underlyingTask
-	logger          *zap.SugaredLogger
+	logger          Logger
 	stopOnce        sync.Once
 	mainSignal      chan os.Signal
 }
 
-func NewManager(logger *zap.SugaredLogger, maxWaitStop time.Duration) *Manager {
+func NewManager(logger Logger, maxWaitStop time.Duration) *Manager {
 	return &Manager{
 		underlyingTasks: []*underlyingTask{},
 		logger:          logger,
@@ -50,13 +49,12 @@ func (m *Manager) Run() error {
 	var allTasks errgroup.Group
 	for _, under := range m.underlyingTasks {
 		underTask := under
-		localLogger := m.logger.With("task", underTask.task.Name())
 		allTasks.Go(func() error {
 			defer stopAll()
 
-			localLogger.Info("starting task")
+			m.logger.Infof("[%s]: starting task", underTask.task.Name())
 			if err := underTask.task.Start(); err != nil {
-				localLogger.With("error", err).Error("interrupted")
+				m.logger.Infof("[%s] interrupted: %s", underTask.task.Name(), err)
 				return err
 			}
 			return nil
@@ -69,7 +67,7 @@ func (m *Manager) Run() error {
 		select {
 		case _, ok := <-m.mainSignal:
 			if ok {
-				m.logger.Info("external request to stop")
+				m.logger.Infof("external request to stop")
 			}
 		}
 		return nil
@@ -86,14 +84,13 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 		var allTasks errgroup.Group
 		for _, under := range m.underlyingTasks {
 			underTask := under
-			localLogger := m.logger.With("task", underTask.task.Name())
 			allTasks.Go(func() error {
-				localLogger.Info("stopping task")
+				m.logger.Infof("[%s]: stopping task", underTask.task.Name())
 				if err := underTask.task.Stop(ctx); err != nil {
-					localLogger.With("error", err).Error("error stopping task")
+					m.logger.Errorf("[%s] error stopping task: %s", underTask.task.Name(), err)
 					return err
 				}
-				localLogger.Info("task stopped")
+				m.logger.Infof("[%s]: task stopped", underTask.task.Name())
 				return nil
 			})
 		}
