@@ -26,6 +26,13 @@ func (g *genericTask) Start() error {
 	return g.start()
 }
 
+func (g *genericTask) StartWithContext(opts StartOptions) error {
+	if opts.Ready != nil {
+		opts.Ready.Done()
+	}
+	return g.start()
+}
+
 func (g *genericTask) Stop(ctx context.Context) error {
 	return g.stop(ctx)
 }
