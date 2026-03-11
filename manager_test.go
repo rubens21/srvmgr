@@ -115,10 +115,6 @@ func (t *failingStartTask) Name() string {
 	return t.name
 }
 
-func (t *failingStartTask) Start() error {
-	return t.StartWithContext(StartOptions{})
-}
-
 func (t *failingStartTask) StartWithContext(opts StartOptions) error {
 	return t.err
 }
@@ -141,10 +137,6 @@ func newBlockingTask(name string) *blockingTask {
 
 func (t *blockingTask) Name() string {
 	return t.name
-}
-
-func (t *blockingTask) Start() error {
-	return t.StartWithContext(StartOptions{})
 }
 
 func (t *blockingTask) StartWithContext(opts StartOptions) error {
@@ -179,10 +171,6 @@ func newDelayedStartTask(name string) *delayedStartTask {
 
 func (t *delayedStartTask) Name() string {
 	return t.name
-}
-
-func (t *delayedStartTask) Start() error {
-	return t.StartWithContext(StartOptions{})
 }
 
 func (t *delayedStartTask) StartWithContext(opts StartOptions) error {

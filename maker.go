@@ -22,10 +22,6 @@ func (g *genericTask) Name() string {
 	return g.name
 }
 
-func (g *genericTask) Start() error {
-	return g.start()
-}
-
 func (g *genericTask) StartWithContext(opts StartOptions) error {
 	if opts.Ready != nil {
 		opts.Ready.Done()

@@ -12,7 +12,6 @@ type StartOptions struct {
 
 type Task interface {
 	Name() string
-	Start() error
 	StartWithContext(opts StartOptions) error
 	Stop(ctx context.Context) error
 }

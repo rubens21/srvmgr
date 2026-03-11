@@ -151,7 +151,7 @@ func (r *taskReady) IsDone() bool {
 
 func (u *underlyingTask) Run() error {
 	defer close(u.done)
-	return u.task.Start()
+	return u.task.StartWithContext(StartOptions{})
 }
 
 func (u *underlyingTask) Shutdown(ctx context.Context) error {
